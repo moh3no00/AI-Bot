@@ -1,3 +1,4 @@
+import re
 from typing import Sequence
 
 
@@ -15,3 +16,29 @@ def analyze_series(prices: Sequence[float]) -> dict:
     slope = num / den
     signal = "buy" if slope > 0 else "sell"
     return {"signal": signal, "slope": slope}
+
+
+def generate_strategy(command: str) -> str:
+    """تبدیل دستور متنی ساده به کد استراتژی پایتون"""
+    text = command.strip()
+    buy_match = re.search(r"قیمت\s+([\w/]+)\s*(?:بیشتر|بالا(?:تر)?)\s*از\s*(\d+(?:\.\d+)?)", text)
+    sell_match = re.search(r"قیمت\s+([\w/]+)\s*(?:کمتر|پایین(?:تر)?)\s*از\s*(\d+(?:\.\d+)?)", text)
+    if "بخر" in text and buy_match:
+        sym, price = buy_match.groups()
+        return (
+            f"price = get_price('{sym}')\n"
+            f"if price > {price}:\n"
+            f"    signal = 'buy'\n"
+            f"else:\n"
+            f"    signal = 'hold'"
+        )
+    if "بفروش" in text and sell_match:
+        sym, price = sell_match.groups()
+        return (
+            f"price = get_price('{sym}')\n"
+            f"if price < {price}:\n"
+            f"    signal = 'sell'\n"
+            f"else:\n"
+            f"    signal = 'hold'"
+        )
+    return "signal = 'hold'"

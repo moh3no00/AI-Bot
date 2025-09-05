@@ -1,9 +1,17 @@
 import streamlit as st
 from ..strategy import load_strategies, save_strategies, add_strategy
+from ..ai import generate_strategy
 
 
 def render():
     st.header("ساخت استراتژی")
+    with st.expander("تولید کد از دستور متنی"):
+        text_cmd = st.text_input("دستور ساده")
+        if st.button("تولید کد استراتژی"):
+            script = generate_strategy(text_cmd)
+            st.code(script, language="python")
+            st.session_state.generated_script = script
+
     with st.form("new_strategy"):
         name = st.text_input("نام استراتژی")
         market = st.selectbox("بازار", ["crypto", "commodity"])
@@ -11,7 +19,7 @@ def render():
         stop_loss = st.number_input("حد ضرر", value=0.0)
         take_profit = st.number_input("حد سود", value=0.0)
         volume = st.number_input("حجم معامله", value=1.0)
-        script = st.text_area("دستور متنی")
+        script = st.text_area("دستور متنی", value=st.session_state.get("generated_script", ""))
         submitted = st.form_submit_button("ذخیره")
         if submitted:
             add_strategy(
