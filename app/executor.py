@@ -1,6 +1,7 @@
 import threading
 from typing import Dict, Callable
 from .strategy import load_strategies
+from .risk import RiskManager
 
 
 def default_price(symbol: str) -> float:
@@ -32,7 +33,13 @@ class StrategyExecutor:
         self.results: Dict[str, str] = {}
 
     def _run(self, strategy: Dict):
-        signal = execute_script(strategy["script"], asset=strategy.get("asset"))
+        risk = RiskManager(strategy.get("stop_loss"), strategy.get("take_profit"))
+        signal = execute_script(
+            strategy["script"],
+            asset=strategy.get("asset"),
+            risk=risk,
+            volume=strategy.get("volume", 1.0),
+        )
         self.results[strategy["name"]] = signal
 
     def run_all(self) -> Dict[str, str]:
